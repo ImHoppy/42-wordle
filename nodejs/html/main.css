@@ -33,9 +33,11 @@ body {
     margin: 2px;
 	font-weight: 1000;
 }
+
 .tile .flip {
 	animation: 0.5s linear flipping;
 }
+
 @keyframes flipping {
 	0% {
 		transform: rotateX(0deg);

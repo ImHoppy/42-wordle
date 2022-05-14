@@ -1,11 +1,15 @@
-import { readFileSync } from 'fs';
-
+"use strict";
 String.prototype.replaceAt = function (index, replacement) {
 	return this.substring(0, index) + replacement + this.substring(index + replacement.length);
 }
+async function fetchAsync (url) {
+	let response = await fetch(url);
+	let data = await response.text();
+	return data;
+}
 
-
-jQuery(document).ready(function () {
+jQuery(document).ready(async function () {
+	const listWords = (await fetchAsync("words.txt")).split('\n');
 	const tile = $(".tile");
 
 	var currentRow = 0;
@@ -14,13 +18,12 @@ jQuery(document).ready(function () {
 	var maxLetter = 5;
 	var loop = 1;
 	const wordsRows = [...new Array(maxRow)].map(x => new Array(maxLetter).fill(''));
-	const listWords = ["valid", "pizza", "early", "steam", "boils", "spout", "count", "wound", "steak", "oeelt", "ofeef", "ofeee"];
+	
 	// var listWords = readFileSync('words.txt').toString().split("\n");
-	for(i in array) {
-		console.log(array[i]);
-	}
+
 	const findingWord = listWords[Math.floor(Math.random() * listWords.length)];
-	// const findingWord = "eeelf";
+	// alert(findingWord);
+	// const findingWord = "banjos";
 	console.log(findingWord);
 	wordsRows.forEach((e, i) => {
 		var wordsRow = $(`<div id="wordsRow-${i}"></div>`);
@@ -115,7 +118,6 @@ jQuery(document).ready(function () {
 	$(document).on('keydown', function (event) {
 		if (!loop)
 			return;
-		console.log(event.key)
 		if (event.key == "Enter")
 			checkWord();
 		else if (event.key == "Backspace")
