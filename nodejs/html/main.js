@@ -3,13 +3,18 @@ String.prototype.replaceAt = function (index, replacement) {
 	return this.substring(0, index) + replacement + this.substring(index + replacement.length);
 }
 async function fetchAsync (url) {
-	let response = await fetch(url);
-	let data = await response.text();
+	let response = await fetch(url)
+	.catch(function(error) {
+		console.error("Cant find dictionary!");
+	})
+	let data = await response?.text();
 	return data;
 }
 
 jQuery(document).ready(async function () {
-	const listWords = (await fetchAsync("words.txt")).split('\n');
+	const listWords = (await fetchAsync("words.txt")).split('\n').filter(el => {
+		return el != "" && el.length == 5 && /^[a-zA-Z]+$/.test(el);
+	});
 	const tile = $(".tile");
 
 	var currentRow = 0;
@@ -19,12 +24,10 @@ jQuery(document).ready(async function () {
 	var loop = 1;
 	const wordsRows = [...new Array(maxRow)].map(x => new Array(maxLetter).fill(''));
 	
-	// var listWords = readFileSync('words.txt').toString().split("\n");
-
 	const findingWord = listWords[Math.floor(Math.random() * listWords.length)];
-	// alert(findingWord);
 	// const findingWord = "banjos";
-	console.log(findingWord);
+	console.error(findingWord)
+
 	wordsRows.forEach((e, i) => {
 		var wordsRow = $(`<div id="wordsRow-${i}"></div>`);
 		tile.append(wordsRow);
@@ -33,6 +36,14 @@ jQuery(document).ready(async function () {
 			wordsRow.append(words);
 		});
 	});
+	const keyboardA = ["Q", "W", "E", "R", "T","Y", "U", "I", "O", "P", "A", "S", "D", "F", "G", "H", "J", "K", "L", "ENTER", "Z", "X", "C", "V", "B", "N", "M", "←"];
+	const keyboard = $(".keyboard");
+	keyboardA.forEach((e, i) => {
+		var wordsRow = $(`<button class="key" id="${e}">${e}</button>`);
+		keyboard.append(wordsRow);
+	});
+
+
 
 	function addLetter(letter = "") {
 		if (currentLetter >= maxLetter || currentRow >= maxRow || letter == "")
@@ -47,10 +58,9 @@ jQuery(document).ready(async function () {
 		if (currentLetter <= 0)
 			return;
 		currentLetter--;
-		letter = '';
 		const letterdiv = $(`#wordsRow-${currentRow}-${currentLetter}`)[0];
-		letterdiv.textContent = letter;
-		wordsRows[currentRow][currentLetter] = letter;
+		letterdiv.textContent = '';
+		wordsRows[currentRow][currentLetter] = '';
 	}
 
 	function flip(doFunc) {
@@ -72,6 +82,7 @@ jQuery(document).ready(async function () {
 		if (word == findingWord) { // if word is the correct
 			flip((i, e) => {
 				$(`#wordsRow-${currentRow}-${i}`).addClass("green");
+				$(`.keyboard #${e}`).addClass("green");
 			});
 			$(".title")[0].outerHTML = "<h1>Win !</h1>";
 			loop = 0;
@@ -104,6 +115,8 @@ jQuery(document).ready(async function () {
 				}));
 				flip((i, e) => {
 					$(`#wordsRow-${tmpRow}-${i}`).addClass(guess[i].color);
+					if (!$(`.keyboard #${e}`).attr("class").match(/(yellow|green)/gm))
+						$(`.keyboard #${e}`).addClass(guess[i].color);
 				});
 				currentLetter = 0;
 				currentRow++;
@@ -126,3 +139,12 @@ jQuery(document).ready(async function () {
 			addLetter(event.key.toUpperCase())
 	});
 });
+/*
+Uncaught ReferenceError: assignment to undeclared variable letter
+    removeLetter http://127.0.0.1:5500/nodejs/html/main.js:50
+    <anonymous> http://127.0.0.1:5500/nodejs/html/main.js:124
+    jQuery 2
+        dispatch
+        handle
+6 main.js:50:3
+*/
