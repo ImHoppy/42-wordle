@@ -1,23 +1,26 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include "dictionary.hpp"
+#include "Colors.hpp"
 
 #define RECT_SIZE 100
 
-enum Colors : uint32_t {
-	BG			= 0x181818FF,
-	BORDER		= 0x696969FF,
-	INCORRECT	= 0x939598FF,
-	GREEN		= 0x538D4EFF,
-	YELLOW		= 0xB59F3BFF
-};
+/*===========================================
+=				SFML STRUCT					=
+===========================================*/
 
 typedef struct s_grid {
-	sf::Text		text;
-	std::string		letter;
-	Colors			color;
+
+	sf::Text			text;
+	std::string			letter;
+	Colors				color;
 	sf::RectangleShape	shape;
+
 } t_grid;
+
+/*===========================================
+=			UTILS FUNCTIONS					=
+===========================================*/
 
 int	len_grid(t_grid grid[5])
 {
@@ -31,6 +34,7 @@ int	len_grid(t_grid grid[5])
 	}
 	return (n);
 }
+
 std::string	join_word(t_grid grid[5])
 {
 	std::string result = grid[0].letter;
@@ -41,12 +45,15 @@ std::string	join_word(t_grid grid[5])
 	return (result);
 }
 
+/*===========================================
+=				ANALYZING INPUT				=
+===========================================*/
+
 void analyse_input(t_grid grid[5], std::string line, std::string secret)
 {
-	std::string            cpy_line = line;
-	std::string            cpy_secret = secret;
+	std::string		cpy_line = line;
+	std::string		cpy_secret = secret;
 
-	/////////////Search for green
 	for ( unsigned int i = 0; i < 5; i++)
 	{
 		if ( line.at(i) == cpy_secret.at(i) )
@@ -56,7 +63,7 @@ void analyse_input(t_grid grid[5], std::string line, std::string secret)
 			cpy_secret.at(i) = ' ';
 		}
 	}
-	/////////////search for yellow
+
 	for ( unsigned int i = 0; i < 5; i++ )
 	{
 		for ( unsigned int j = 0; j < 5; j++ )
@@ -71,28 +78,55 @@ void analyse_input(t_grid grid[5], std::string line, std::string secret)
 	}
 }
 
+/*===========================================
+=					MAINs					=
+===========================================*/
+
 int main()
 {
-	sf::RenderWindow	window(sf::VideoMode(650, 755 /*900*/), "Wordle!");
+/*===========================================
+=					VARIABLES				=
+===========================================*/
+
+	sf::RenderWindow	window(sf::VideoMode(650, 1155), "Wordle!");
 	t_grid				grid[6][5];
 	sf::Font			font;
+	sf::Font			titlefont;
+	sf::Text			message;
+	sf::Text			answer;
 	sf::String			input[5];
+	sf::Text			title;
 	srand(time(NULL));
 	Dictionary			dict;
 
-	std::cout<<dict.get_secret()<<std::endl;
+	// std::cout << dict.get_secret() << std::endl;;
+
+/*===========================================
+=				LOADING FONTS				=
+===========================================*/
+
 	if (!font.loadFromFile("arial.ttf")) {
 		exit(1);
 	}
+
+		if (!titlefont.loadFromFile("Vacaciones.ttf")) {
+		exit(1);
+	}
+
+/*===========================================
+=		MISE EN FORME DE LA GRILLE			=
+===========================================*/
+
 	for (size_t i = 0; i < 6; i++)
 	{
 		for (size_t j = 0; j < 5; j++)
 		{
+
 			grid[i][j].shape = sf::RectangleShape(sf::Vector2f(RECT_SIZE, RECT_SIZE));
 			grid[i][j].shape.setFillColor(sf::Color(Colors::BG));
 			grid[i][j].shape.setOutlineColor(sf::Color(Colors::BORDER));
 			grid[i][j].shape.setOutlineThickness(2);
-			grid[i][j].shape.setPosition((j * (RECT_SIZE+10)) + 55, (i * (RECT_SIZE+10)) + 55);
+			grid[i][j].shape.setPosition((j * (RECT_SIZE+10)) + 56, (i * (RECT_SIZE+10)) + 255);
 			
 			grid[i][j].letter = "";
 			grid[i][j].color = Colors::BG;
@@ -100,9 +134,40 @@ int main()
 			grid[i][j].text.setFont(font);
 			grid[i][j].text.setString(grid[i][j].letter);
 			grid[i][j].text.setCharacterSize(40);
-			grid[i][j].text.setPosition((j * (RECT_SIZE+10)) + 56 + (RECT_SIZE/3), (i * (RECT_SIZE+10)) + 55 + (RECT_SIZE/4));
+			grid[i][j].text.setPosition((j * (RECT_SIZE+10)) + 56 + (RECT_SIZE/3), (i * (RECT_SIZE+10)) + 255 + (RECT_SIZE/4));
+		
 		}
 	}
+
+/*===========================================
+=			TITRE ET MESSAGE				=
+===========================================*/
+
+	title = sf::Text();
+	title.setFont(titlefont);
+	title.setString("WORDLE !");
+	title.setCharacterSize(40);
+	title.setPosition(225, 125);
+
+	message = sf::Text();
+	message.setFont(titlefont);
+	message.setString("Type a word !");
+	message.setCharacterSize(40);
+	message.setPosition(200, 950);
+
+	answer = sf::Text();
+
+	std::string ans = "";
+
+	answer.setFont(font);
+	answer.setString(ans);
+	answer.setCharacterSize(30);
+	answer.setPosition(190, 1100);
+
+
+/*===========================================
+=					JEU						=
+===========================================*/
 
 	int currentRow = 0;
 	int currentLetter = 0;
@@ -113,6 +178,7 @@ int main()
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
+
 			if (event.type == sf::Event::Closed)
 				window.close();
 			if (event.type == sf::Event::KeyPressed)
@@ -127,19 +193,28 @@ int main()
 					});
 					if (word.length() != 5)
 						continue;
-					if (!dict.exist_word(word))
+					if (!dict.exist_word(word)) {
+						message.setString("Not an existant word !");
+						message.setPosition(100, 950);
 						continue;
+					}
+					message.setString("Type a word");
+					message.setPosition(200, 950);
 					analyse_input(grid[currentRow], word, dict.get_secret());
 					if (word == dict.get_secret()) {
-						std::cout << "Winning ! " << dict.get_secret() << std::endl;
-						// window.close();
+						message.setString("Winning ! ");
+						message.setPosition(235, 950);
+						break;
 					}
 					currentRow++;
 					currentLetter = 0;
-					std::cout << "Enter" << std::endl; // check word in gridShape
 					if (currentRow == 6) {
-						std::cout << "Loosing ! " << dict.get_secret() << std::endl;
-						// window.close();
+						message.setString("Loosing ! ");
+						message.setPosition(235, 950);
+						ans = "The answer was ";
+						ans += dict.get_secret();
+						answer.setString(ans);
+						break ;
 					}
 				}
 				else if (event.key.code == sf::Keyboard::BackSpace)
@@ -149,11 +224,9 @@ int main()
 					currentLetter--;
 					grid[currentRow][currentLetter].text.setString(' ');
 					grid[currentRow][currentLetter].letter = "";
-					std::cout << "Delete" << std::endl; // delete letter in gridShape
 				}
 				else {
 					int keycode = static_cast<int>(event.key.code);
-					// std::cout << keycode << std::endl;
 					if (keycode >= 0 && keycode <= 26)
 					{
 						if (currentLetter > 4)
@@ -161,8 +234,7 @@ int main()
 						grid[currentRow][currentLetter].text.setString((char)(keycode + 'A'));
 						grid[currentRow][currentLetter].letter = (char)(keycode + 'A');
 						currentLetter++;
-						std::cout << (char)(keycode + 'A') << std::endl; // Add letter with keycode + 'A'
-						
+						// std::cout << (char)(keycode + 'A') << std::endl; // Add letter with keycode + 'A'
 					}
 				}
 				
@@ -170,18 +242,24 @@ int main()
 			}
 		}
 
+/*===========================================
+=					AFFICHAGE				=
+===========================================*/
 
 		window.clear(sf::Color(Colors::BG));
 		for (size_t i = 0; i < 6; i++)
 		{
 			for (size_t j = 0; j < 5; j++)
 			{
-				// window.draw(gridShape[i][j]);
 				grid[i][j].shape.setFillColor(sf::Color(grid[i][j].color));
 				if (grid[i][j].color != Colors::BG)
 					grid[i][j].shape.setOutlineColor(sf::Color(grid[i][j].color));
+				window.draw(title);
+				window.draw(message);
 				window.draw(grid[i][j].shape);
 				window.draw(grid[i][j].text);
+				window.draw(answer);
+
 			}
 		}
 		window.display();
