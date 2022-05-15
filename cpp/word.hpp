@@ -6,7 +6,7 @@
 /*   By: wluong <wluong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 17:14:00 by wluong            #+#    #+#             */
-/*   Updated: 2022/05/15 18:09:32 by wluong           ###   ########.fr       */
+/*   Updated: 2022/05/15 19:04:02 by wluong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,8 @@ class word
 		word();
 		word(int x, sf::Font font);
 		~word();
+
+		word& operator=(word const & other);
 
 		std::string		getword();
 		unsigned int	length();
