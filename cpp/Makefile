@@ -3,7 +3,7 @@ CFLAGS = -Wall
 EXEC_NAME = wordle
 INCLUDES = -ISFML-2.5.1/include
 LIBS = -LSFML-2.5.1/lib -lsfml-graphics -lsfml-window -lsfml-system
-OBJ_FILES = letter.o word.o dictionary.o main.o
+OBJ_FILES = main.o dictionary.o
 INSTALL_DIR = /usr/bin
 
 all : $(EXEC_NAME)

@@ -1,49 +1,111 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
-#include "word.hpp"
 #include "dictionary.hpp"
-#include <string>
 
 #define RECT_SIZE 100
 
+enum Colors : uint32_t {
+	BG			= 0x181818FF,
+	BORDER		= 0x696969FF,
+	INCORRECT	= 0x939598FF,
+	GREEN		= 0x538D4EFF,
+	YELLOW		= 0xB59F3BFF
+};
+
+typedef struct s_grid {
+	sf::Text		text;
+	std::string		letter;
+	Colors			color;
+	sf::RectangleShape	shape;
+} t_grid;
+
+int	len_grid(t_grid grid[5])
+{
+	int	n = 0;
+	for (size_t i = 0; i < 5; i++)
+	{
+		if (!grid[i].letter.empty())
+			n++;
+		else
+			return (n);
+	}
+	return (n);
+}
+std::string	join_word(t_grid grid[5])
+{
+	std::string result = grid[0].letter;
+	for (size_t i = 1; i < 5; i++)
+	{
+		result += grid[i].letter;
+	}
+	return (result);
+}
+
+void analyse_input(t_grid grid[5], std::string line, std::string secret)
+{
+	std::string            cpy_line = line;
+	std::string            cpy_secret = secret;
+
+	/////////////Search for green
+	for ( unsigned int i = 0; i < 5; i++)
+	{
+		if ( line.at(i) == cpy_secret.at(i) )
+		{
+			grid[i].color = Colors::GREEN;
+			cpy_line.at(i) = ' ';
+			cpy_secret.at(i) = ' ';
+		}
+	}
+	/////////////search for yellow
+	for ( unsigned int i = 0; i < 5; i++ )
+	{
+		for ( unsigned int j = 0; j < 5; j++ )
+		{
+			if ( cpy_line.at(i) == cpy_secret.at(j) && cpy_line.at(i) != ' ')
+			{
+				grid[i].color = Colors::YELLOW;
+				cpy_line.at(i) = ' ';
+				cpy_secret.at(j) = ' ';
+			}	
+		}
+	}
+}
+
 int main()
 {
-	sf::RenderWindow	window(sf::VideoMode(650, 900), "Wordle!");
-	sf::RectangleShape	wordsShape[5];
-	// t_grid				grid[6][5];
+	sf::RenderWindow	window(sf::VideoMode(650, 755 /*900*/), "Wordle!");
+	t_grid				grid[6][5];
 	sf::Font			font;
 	sf::String			input[5];
-	word				words[6];
-	Dictionary			dico;
-
 	srand(time(NULL));
+	Dictionary			dict;
 
+	std::cout<<dict.get_secret()<<std::endl;
 	if (!font.loadFromFile("arial.ttf")) {
 		exit(1);
 	}
-
-/*************************************************************
- * 					WALTER
- * 
- ************************************************************/
-
 	for (size_t i = 0; i < 6; i++)
 	{
-		words[i] = word(i, font);
+		for (size_t j = 0; j < 5; j++)
+		{
+			grid[i][j].shape = sf::RectangleShape(sf::Vector2f(RECT_SIZE, RECT_SIZE));
+			grid[i][j].shape.setFillColor(sf::Color(Colors::BG));
+			grid[i][j].shape.setOutlineColor(sf::Color(Colors::BORDER));
+			grid[i][j].shape.setOutlineThickness(2);
+			grid[i][j].shape.setPosition((j * (RECT_SIZE+10)) + 55, (i * (RECT_SIZE+10)) + 55);
+			
+			grid[i][j].letter = "";
+			grid[i][j].color = Colors::BG;
+			grid[i][j].text = sf::Text();
+			grid[i][j].text.setFont(font);
+			grid[i][j].text.setString(grid[i][j].letter);
+			grid[i][j].text.setCharacterSize(40);
+			grid[i][j].text.setPosition((j * (RECT_SIZE+10)) + 55 + (RECT_SIZE/3), (i * (RECT_SIZE+10)) + 55 + (RECT_SIZE/4));
+		}
 	}
 
-/******************************************************************
- * 
- * 
- *****************************************************************/
-
-	// for (size_t i = 0; i < 5; i++)
-	// {
-	// 	wordsShape[i] = sf::RectangleShape(sf::Vector2f(RECT_SIZE, 1));
-	// 	wordsShape[i].setPosition((i * (RECT_SIZE+10)) + 55, 900 * 0.95);
-	// }
 	int currentRow = 0;
-	// int currentLetter = 0;
+	int currentLetter = 0;
 	
 	window.setKeyRepeatEnabled(false);
 	while (window.isOpen())
@@ -59,30 +121,46 @@ int main()
 					window.close();
 				else if (event.key.code == sf::Keyboard::Enter)
 				{
-					if (words[currentRow].length() != 5)
+					std::string word = join_word(grid[currentRow]);
+					std::for_each(word.begin(), word.end(), [](char & c) {
+						c = ::tolower(c);
+					});
+					if (word.length() != 5)
 						continue;
-					if (!dico.exist_word(words[currentRow].getword()))
+					if (!dict.exist_word(word))
 						continue;
-					if (dico.get_secret() == words[currentRow].getword())
-					{
-						std::cout << "You win" << std::endl;
-						window.close();
+					analyse_input(grid[currentRow], word, dict.get_secret());
+					if (word == dict.get_secret()) {
+						std::cout << "Winning ! " << dict.get_secret() << std::endl;
+						// window.close();
 					}
 					currentRow++;
-					if (currentRow >= 6)
-					{
-						std::cout << "You Loose" << std::endl;
-						window.close();
-					}
+					currentLetter = 0;
 					std::cout << "Enter" << std::endl; // check word in gridShape
+					if (currentRow == 6) {
+						std::cout << "Loosing ! " << dict.get_secret() << std::endl;
+						// window.close();
+					}
 				}
 				else if (event.key.code == sf::Keyboard::BackSpace)
-					words[currentRow].deleteLeter();
+				{
+					if (currentLetter <= 0)
+						continue;
+					currentLetter--;
+					grid[currentRow][currentLetter].text.setString(' ');
+					grid[currentRow][currentLetter].letter = "";
+					std::cout << "Delete" << std::endl; // delete letter in gridShape
+				}
 				else {
 					int keycode = static_cast<int>(event.key.code);
 					// std::cout << keycode << std::endl;
-					if (keycode >= 0 && keycode <= 26) {
-						words[currentRow].addLetter((keycode + 'A'));
+					if (keycode >= 0 && keycode <= 26)
+					{
+						if (currentLetter > 4)
+							continue;
+						grid[currentRow][currentLetter].text.setString((char)(keycode + 'A'));
+						grid[currentRow][currentLetter].letter = (char)(keycode + 'A');
+						currentLetter++;
 						std::cout << (char)(keycode + 'A') << std::endl; // Add letter with keycode + 'A'
 						
 					}
@@ -94,22 +172,18 @@ int main()
 
 
 		window.clear(sf::Color(Colors::BG));
-		// window.clear(sf::Color::White);
 		for (size_t i = 0; i < 6; i++)
 		{
 			for (size_t j = 0; j < 5; j++)
 			{
 				// window.draw(gridShape[i][j]);
-				window.draw(words[i]._word[j].getShape());
-				window.draw(words[i]._word[j].getText());
-				printf("%d", words[i]._word[j].getText().getCharacterSize());
+				grid[i][j].shape.setFillColor(sf::Color(grid[i][j].color));
+				if (grid[i][j].color != Colors::BG)
+					grid[i][j].shape.setOutlineColor(sf::Color(grid[i][j].color));
+				window.draw(grid[i][j].shape);
+				window.draw(grid[i][j].text);
 			}
-			std::cout<<	std::endl;
 		}
-		// for (size_t i = 0; i < 5; i++)
-		// {
-		// 	window.draw(wordsShape[i]);
-		// }
 		window.display();
 	}
 
