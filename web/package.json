@@ -2,14 +2,17 @@
   "name": "wordle",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "run" : ""
+    "server": "node server.js"
   },
   "repository": {
     "type": "git",
     "url": "git@vogsphere-v2.42.fr:vogsphere/intra-uuid-7646657c-f625-4b54-9a01-69a68b5dea16-4131509-mbraets"
   },
   "author": "Hoppy",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.1"
+  }
 }

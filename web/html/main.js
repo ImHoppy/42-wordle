@@ -6,8 +6,11 @@ async function fetchAsync (url) {
 	let response = await fetch(url)
 	.catch(function(error) {
 		console.error("Cant find dictionary!");
+		window.stop()
 	})
-	let data = await response?.text();
+	let data = null;
+	if (response.status == 200)
+		data = await response?.text();
 	return data;
 }
 
@@ -26,7 +29,7 @@ jQuery(document).ready(async function () {
 	
 	const findingWord = listWords[Math.floor(Math.random() * listWords.length)];
 	// const findingWord = "banjos";
-	console.error(findingWord)
+	console.log(findingWord)
 
 	wordsRows.forEach((e, i) => {
 		var wordsRow = $(`<div id="wordsRow-${i}"></div>`);
@@ -74,6 +77,17 @@ jQuery(document).ready(async function () {
 			}, 500 * i);
 		}));
 	}
+	
+	function addDefinition(text) {
+		var link =`https://api.dictionaryapi.dev/api/v2/entries/en/${findingWord}`
+		var request = fetchAsync(link).then((value) => {
+			if (value == null)
+				return $(".title")[0].outerHTML = `${text} <h2>${findingWord}</h2>`;
+			var definition = JSON.parse(value)[0].meanings[0].definitions[0].definition;
+			$(".title")[0].outerHTML = `${text} <h2>${findingWord}: ${definition}</h2>`;
+		
+		});
+	}
 
 	function checkWord() {
 		if (currentLetter == maxLetter - 1)
@@ -84,7 +98,7 @@ jQuery(document).ready(async function () {
 				$(`#wordsRow-${currentRow}-${i}`).addClass("green");
 				$(`.keyboard #${e}`).addClass("green");
 			});
-			$(".title")[0].outerHTML = "<h1>Win !</h1>";
+			addDefinition("<h1>Win !</h1>")
 			loop = 0;
 			return;
 		}
@@ -104,7 +118,6 @@ jQuery(document).ready(async function () {
 						e.lock = true;
 					}
 				}));
-				console.log(guess)
 				guess.forEach(((e, i) => {
 					if (!e.lock && copyValid.includes(e.letter))
 					{
@@ -123,7 +136,7 @@ jQuery(document).ready(async function () {
 			}
 		}
 		if (currentRow >= maxRow) {
-			$(".title")[0].outerHTML = "<h1>Loose..</h1>";
+			addDefinition("<h1>Loose..</h1>")
 			loop = 0;
 			return;
 		}
@@ -138,6 +151,17 @@ jQuery(document).ready(async function () {
 		else if (event.key.match(/[a-zA-Z]/g) && event.key.length == 1)
 			addLetter(event.key.toUpperCase())
 	});
+	$(":button").click((event) => {
+		if (!loop)
+			return;
+		var letter = event.currentTarget.id;
+		if (letter == "ENTER")
+			checkWord();
+		else if (letter == "←")
+			removeLetter();
+		else if (letter.match(/[a-zA-Z]/g) && letter.length == 1)
+			addLetter(letter.toUpperCase())
+	})
 });
 /*
 Uncaught ReferenceError: assignment to undeclared variable letter
