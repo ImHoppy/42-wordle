@@ -1,0 +1,6 @@
+#!/bin/bash
+if [ ! -d ./node_modules ]; then
+	npm i
+fi;
+echo
+npm run server

@@ -42,8 +42,7 @@ std::string	join_word(t_grid grid[5])
 
 int main()
 {
-	sf::RenderWindow	window(sf::VideoMode(650, 900), "Wordle!");
-	sf::RectangleShape	wordsShape[5];
+	sf::RenderWindow	window(sf::VideoMode(650, 755 /*900*/), "Wordle!");
 	t_grid				grid[6][5];
 	sf::Font			font;
 	sf::String			input[5];
@@ -70,11 +69,7 @@ int main()
 			grid[i][j].text.setPosition((j * (RECT_SIZE+10)) + 55 + (RECT_SIZE/3), (i * (RECT_SIZE+10)) + 55 + (RECT_SIZE/4));
 		}
 	}
-	// for (size_t i = 0; i < 5; i++)
-	// {
-	// 	wordsShape[i] = sf::RectangleShape(sf::Vector2f(RECT_SIZE, 1));
-	// 	wordsShape[i].setPosition((i * (RECT_SIZE+10)) + 55, 900 * 0.95);
-	// }
+
 	int currentRow = 0;
 	int currentLetter = 0;
 	
@@ -105,7 +100,7 @@ int main()
 					if (currentLetter <= 0)
 						continue;
 					currentLetter--;
-					grid[currentRow][currentLetter].text.setString("");
+					grid[currentRow][currentLetter].text.setString(' ');
 					grid[currentRow][currentLetter].letter = "";
 					std::cout << "Delete" << std::endl; // delete letter in gridShape
 				}
