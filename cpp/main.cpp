@@ -100,7 +100,7 @@ int main()
 			grid[i][j].text.setFont(font);
 			grid[i][j].text.setString(grid[i][j].letter);
 			grid[i][j].text.setCharacterSize(40);
-			grid[i][j].text.setPosition((j * (RECT_SIZE+10)) + 55 + (RECT_SIZE/3), (i * (RECT_SIZE+10)) + 55 + (RECT_SIZE/4));
+			grid[i][j].text.setPosition((j * (RECT_SIZE+10)) + 56 + (RECT_SIZE/3), (i * (RECT_SIZE+10)) + 55 + (RECT_SIZE/4));
 		}
 	}
 
