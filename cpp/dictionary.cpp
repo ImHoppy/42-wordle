@@ -4,7 +4,7 @@
 *				CONSTRUCTORS						*
 ****************************************************/
 
-Dictionary::Dictionary(void) : _secret(""), _dict() {
+Dictionary::Dictionary(void) : _dict(), _secret("") {
 	fill_dictionary();
 	this->_secret = random_word(_dict);
 }

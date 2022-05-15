@@ -2,6 +2,7 @@
 #include <iostream>
 #include "word.hpp"
 #include "dictionary.hpp"
+#include <string>
 
 #define RECT_SIZE 100
 
@@ -93,6 +94,7 @@ int main()
 
 
 		window.clear(sf::Color(Colors::BG));
+		// window.clear(sf::Color::White);
 		for (size_t i = 0; i < 6; i++)
 		{
 			for (size_t j = 0; j < 5; j++)
@@ -100,7 +102,9 @@ int main()
 				// window.draw(gridShape[i][j]);
 				window.draw(words[i]._word[j].getShape());
 				window.draw(words[i]._word[j].getText());
+				printf("%d", words[i]._word[j].getText().getCharacterSize());
 			}
+			std::cout<<	std::endl;
 		}
 		// for (size_t i = 0; i < 5; i++)
 		// {
