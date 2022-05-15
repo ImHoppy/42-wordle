@@ -1,82 +1,48 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include "word.hpp"
+#include "dictionary.hpp"
 
 #define RECT_SIZE 100
-
-enum Colors : uint32_t {
-	BG			= 0x181818FF,
-	BORDER		= 0x696969FF,
-	INCORRECT	= 0x939598FF,
-	GREEN		= 0x538D4EFF,
-	YELLOW		= 0xB59F3BFF
-};
-
-typedef struct s_grid {
-	sf::Text		text;
-	std::string		letter;
-	Colors			color;
-	sf::RectangleShape	shape;
-} t_grid;
-
-int	len_grid(t_grid grid[5])
-{
-	int	n = 0;
-	for (size_t i = 0; i < 5; i++)
-	{
-		if (!grid[i].letter.empty())
-			n++;
-		else
-			return (n);
-	}
-	return (n);
-}
-std::string	join_word(t_grid grid[5])
-{
-	std::string result = grid[0].letter;
-	for (size_t i = 1; i < 5; i++)
-	{
-		result += grid[i].letter;
-	}
-	return (result);
-}
 
 int main()
 {
 	sf::RenderWindow	window(sf::VideoMode(650, 900), "Wordle!");
 	sf::RectangleShape	wordsShape[5];
-	t_grid				grid[6][5];
+	// t_grid				grid[6][5];
 	sf::Font			font;
 	sf::String			input[5];
+	word				words[6];
+	Dictionary			dico;
+
+	srand(time(NULL));
 
 	if (!font.loadFromFile("arial.ttf")) {
 		exit(1);
 	}
+
+/*************************************************************
+ * 					WALTER
+ * 
+ ************************************************************/
+
 	for (size_t i = 0; i < 6; i++)
 	{
-		for (size_t j = 0; j < 5; j++)
-		{
-			grid[i][j].shape = sf::RectangleShape(sf::Vector2f(RECT_SIZE, RECT_SIZE));
-			grid[i][j].shape.setFillColor(sf::Color(Colors::BG));
-			grid[i][j].shape.setOutlineColor(sf::Color(Colors::BORDER));
-			grid[i][j].shape.setOutlineThickness(2);
-			grid[i][j].shape.setPosition((j * (RECT_SIZE+10)) + 55, (i * (RECT_SIZE+10)) + 55);
-			
-			grid[i][j].letter = "";
-			grid[i][j].color = Colors::BG;
-			grid[i][j].text = sf::Text();
-			grid[i][j].text.setFont(font);
-			grid[i][j].text.setString(grid[i][j].letter);
-			grid[i][j].text.setCharacterSize(40);
-			grid[i][j].text.setPosition((j * (RECT_SIZE+10)) + 55 + (RECT_SIZE/3), (i * (RECT_SIZE+10)) + 55 + (RECT_SIZE/4));
-		}
+		words[i] = word(i, font);
 	}
+
+/******************************************************************
+ * 
+ * 
+ *****************************************************************/
+
 	// for (size_t i = 0; i < 5; i++)
 	// {
 	// 	wordsShape[i] = sf::RectangleShape(sf::Vector2f(RECT_SIZE, 1));
 	// 	wordsShape[i].setPosition((i * (RECT_SIZE+10)) + 55, 900 * 0.95);
 	// }
 	int currentRow = 0;
-	int currentLetter = 0;
+	// int currentLetter = 0;
 	
 	window.setKeyRepeatEnabled(false);
 	while (window.isOpen())
@@ -92,33 +58,30 @@ int main()
 					window.close();
 				else if (event.key.code == sf::Keyboard::Enter)
 				{
-					if (len_grid(grid[currentRow]) != 5)
+					if (words[currentRow].length() != 5)
 						continue;
-					if (join_word(grid[currentRow]) != "TREES")
+					if (!dico.exist_word(words[currentRow].getword()))
 						continue;
+					if (dico.get_secret() == words[currentRow].getword())
+					{
+						std::cout << "You win" << std::endl;
+						window.close();
+					}
 					currentRow++;
-					currentLetter = 0;
+					if (currentRow >= 6)
+					{
+						std::cout << "You Loose" << std::endl;
+						window.close();
+					}
 					std::cout << "Enter" << std::endl; // check word in gridShape
 				}
 				else if (event.key.code == sf::Keyboard::BackSpace)
-				{
-					if (currentLetter <= 0)
-						continue;
-					currentLetter--;
-					grid[currentRow][currentLetter].text.setString("");
-					grid[currentRow][currentLetter].letter = "";
-					std::cout << "Delete" << std::endl; // delete letter in gridShape
-				}
+					words[currentRow].deleteLeter();
 				else {
 					int keycode = static_cast<int>(event.key.code);
 					// std::cout << keycode << std::endl;
-					if (keycode >= 0 && keycode <= 26)
-					{
-						if (currentLetter > 4)
-							continue;
-						grid[currentRow][currentLetter].text.setString((char)(keycode + 'A'));
-						grid[currentRow][currentLetter].letter = (char)(keycode + 'A');
-						currentLetter++;
+					if (keycode >= 0 && keycode <= 26) {
+						words[currentRow].addLetter((keycode + 'A'));
 						std::cout << (char)(keycode + 'A') << std::endl; // Add letter with keycode + 'A'
 						
 					}
@@ -135,8 +98,8 @@ int main()
 			for (size_t j = 0; j < 5; j++)
 			{
 				// window.draw(gridShape[i][j]);
-				window.draw(grid[i][j].shape);
-				window.draw(grid[i][j].text);
+				window.draw(words[i]._word[j].getShape());
+				window.draw(words[i]._word[j].getText());
 			}
 		}
 		// for (size_t i = 0; i < 5; i++)
