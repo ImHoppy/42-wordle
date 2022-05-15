@@ -1,16 +1,15 @@
-CC = g++
+CC = clang++
 CFLAGS = -Wall
 EXEC_NAME = wordle
 INCLUDES = -ISFML-2.5.1/include
 LIBS = -LSFML-2.5.1/lib -lsfml-graphics -lsfml-window -lsfml-system
-OBJ_FILES = main.o
+OBJ_FILES = letter.o word.o dictionary.o main.o
 INSTALL_DIR = /usr/bin
 
 all : $(EXEC_NAME)
 	$(shell) export LD_LIBRARY_PATH=SFML-2.5.1/lib && ./$(EXEC_NAME)
 
 run : all
-
 
 clean:
 	rm $(OBJ_FILES)
