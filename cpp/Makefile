@@ -19,11 +19,11 @@ all: $(SFMLFOLDER) $(EXEC_NAME)
 	$(shell) export LD_LIBRARY_PATH=SFML-2.5.1/lib && ./$(EXEC_NAME)
 
 $(SFMLFOLDER):
-	echo "Installing SFML lib.."; \
-	wget $(SFMLURL) -O SFML.tar.gz; \
-	tar -xvf SFML.tar.gz; \
-	rm SFML.tar.gz; \
-	echo "SFML lib done"; \
+	@echo "Installing SFML lib.."
+	wget $(SFMLURL) -O SFML.tar.gz
+	tar -xvf SFML.tar.gz
+	rm SFML.tar.gz
+	@echo "SFML lib done"
 
 run : all
 
